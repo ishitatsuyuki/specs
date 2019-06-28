@@ -185,7 +185,7 @@
 
 pub extern crate shred;
 
-extern crate crossbeam;
+extern crate crossbeam_channel;
 #[macro_use]
 extern crate derivative;
 extern crate fnv;

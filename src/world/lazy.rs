@@ -1,4 +1,5 @@
-use crossbeam::queue::SegQueue;
+use crossbeam_queue::SegQueue;
+use derivative::Derivative;
 
 use world::{Builder, Component, EntitiesRes, Entity, World};
 
