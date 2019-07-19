@@ -22,7 +22,7 @@ use std::error::Error;
 use std::io::Write;
 use std::marker::PhantomData;
 
-use crossbeam::queue::MsQueue;
+use crossbeam_queue::SegQueue;
 use futures::executor::{spawn, Notify, Spawn};
 use futures::{Async, Future};
 
@@ -39,14 +39,14 @@ pub type BoxedFuture<T> = Box<Future<Item = T, Error = BoxedErr> + Send + Sync +
 /// This is the return value of `Errors::drain`.
 #[derive(Debug)]
 pub struct DrainErrors<'a> {
-    queue: &'a mut MsQueue<BoxedErr>,
+    queue: &'a mut SegQueue<BoxedErr>,
 }
 
 impl<'a> Iterator for DrainErrors<'a> {
     type Item = BoxedErr;
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.queue.try_pop()
+        self.queue.pop().ok()
     }
 }
 
@@ -55,7 +55,7 @@ impl<'a> Iterator for DrainErrors<'a> {
 #[derive(Debug)]
 pub struct Errors {
     /// The collection of errors.
-    errors: MsQueue<BoxedErr>,
+    errors: SegQueue<BoxedErr>,
 }
 
 impl Default for Errors {
@@ -68,7 +68,7 @@ impl Errors {
     /// Creates a new instance of `Errors`.
     pub fn new() -> Self {
         Errors {
-            errors: MsQueue::new(),
+            errors: SegQueue::new(),
         }
     }
 
@@ -113,7 +113,7 @@ impl Errors {
 
     /// Removes the first error from the queue.
     pub fn pop_err(&mut self) -> Option<BoxedErr> {
-        self.errors.try_pop()
+        self.errors.pop().ok()
     }
 
     /// Returns a draining iterator, removing elements
